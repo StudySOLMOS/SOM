@@ -15,8 +15,6 @@ public:
 
 public:
 	bool Initialize();
-	bool InitializeVertexBuffer();
-	bool InitializeIndexBuffer();
 	void Pulse();
 	void PreRender();
 	void Render();

@@ -11,9 +11,9 @@ public:
 	LPDIRECT3D9 m_pD3D;
 
 public:
+	WNDCLASSEX wc;
 	bool m_bIsActive;
 	HWND m_hWnd;
-	WNDCLASSEX wc;
 	int m_iScreenWidth;
 	int m_iScreenHeigth;
 

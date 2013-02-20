@@ -8,24 +8,25 @@ CGraphicManager::~CGraphicManager(void)
 {
 }
 
-
 bool CGraphicManager::Initialize()
 {
+	if(FAILED(D3DXCreateTextureFromFileA(m_pD3DDevice, "HighSchool.bmp",&m_pTexture)))
+	{
+		if(FAILED(D3DXCreateTextureFromFileA(m_pD3DDevice, "..\\HighSchool.bmp",&m_pTexture)))
+		{
+			MessageBox(NULL, "Could not find HighSchool.bmp", "Study.exe", MB_OK);
+			return false;
+		}
+	}
 
+	m_pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	m_pD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 
+	if(FAILED(m_pD3DDevice->CreateVertexBuffer(8*sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pVertexBuffer, NULL)))
+	{
+		return false;
+	}
 
-	//m_pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-
-	//m_pD3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-
-
-	//m_pD3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
-	return true;
-}
-
-bool CGraphicManager::InitializeVertexBuffer()
-{
 	CUSTOMVERTEX Vertices[] = 
 	{
 		{ -1,  1,  1 , 0xffff0000 },		/// v0
@@ -39,14 +40,9 @@ bool CGraphicManager::InitializeVertexBuffer()
 		{ -1, -1, -1 , 0xffffffff },			/// v7
 	};
 
-	if(FAILED(m_pD3DDevice->CreateVertexBuffer(8*sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pVertexBuffer, NULL)))
-	{
-		return false;
-	}
-
 	//정점버퍼를 값으로 채운다
 	//정정버퍼의 Lock()함수를 호출하여 포인터를 얻어온다.
-	VOID* pVertices;
+	void* pVertices;
 
 	if(FAILED(m_pVertexBuffer->Lock(0, sizeof(Vertices),(void**)&pVertices,0)))
 	{
@@ -58,11 +54,14 @@ bool CGraphicManager::InitializeVertexBuffer()
 	//UnLock()함수를 호출하여 포인터로부터의 접근을 막는다.
 	m_pVertexBuffer->Unlock();
 
-	return true;
-}
+	//인덱스 버퍼 생성
+	//D3DFMT_INDEX16은 인덱스의 단위가 16비트라는 것.
+	//CUSTOMINDEX구조체에서 WORD형으로 선언하였으므로, D3DFMT_INDEX16을 사용한다.
+	if(FAILED(m_pD3DDevice->CreateIndexBuffer(12* sizeof(CUSTOMINDEX), 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &m_pIndexBuffer, NULL)))
+	{
+		return false;
+	}
 
-bool CGraphicManager::InitializeIndexBuffer()
-{
 	CUSTOMINDEX	Index[] =
 	{
 		{ 0, 1, 2 }, { 0, 2, 3 },	/// 윗면
@@ -73,13 +72,6 @@ bool CGraphicManager::InitializeIndexBuffer()
 		{ 0, 4, 5 }, { 0, 5, 1 }		/// 뒷면
 	};
 
-	//인덱스 버퍼 생성
-	//D3DFMT_INDEX16은 인덱스의 단위가 16비트라는 것.
-	//CUSTOMINDEX구조체에서 WORD형으로 선언하였으므로, D3DFMT_INDEX16을 사용한다.
-	if(FAILED(m_pD3DDevice->CreateIndexBuffer(12* sizeof(CUSTOMINDEX), 0, D3DFMT_INDEX16, D3DPOOL_DEFAULT, &m_pIndexBuffer, NULL)))
-	{
-		return false;
-	}
 
 	void* pIndices;
 	if(FAILED(m_pIndexBuffer->Lock(0, sizeof(Index), (void**)&pIndices,0)))
@@ -91,6 +83,10 @@ bool CGraphicManager::InitializeIndexBuffer()
 
 	m_pIndexBuffer->Unlock();
 
+
+	//m_pD3DDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	//m_pD3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+	//m_pD3DDevice->SetRenderState(D3DRS_LIGHTING, TRUE);
 	return true;
 }
 
@@ -112,10 +108,20 @@ void CGraphicManager::Render()
 
 	SetupMatrix();
 
+	if(m_pTexture)
+	{
+		m_pD3DDevice->SetTexture(0, m_pTexture);
+	}
+
 	m_pD3DDevice->SetStreamSource(0, m_pVertexBuffer, 0 , sizeof(CUSTOMVERTEX));
 	m_pD3DDevice->SetFVF(D3DFVF_CUSTOMVERTEX);
 	m_pD3DDevice->SetIndices(m_pIndexBuffer);
 	m_pD3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+
+	//m_pD3DDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	//m_pD3DDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);					//첫번째 섞을 색은 텍스처 색
+	//m_pD3DDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);					//두번째 섞을 색은 정점 색
+	//m_pD3DDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 }
 
 void CGraphicManager::PostRender()
@@ -148,7 +154,6 @@ void CGraphicManager::SetupMatrix()
 	//물체를 Y축을 기준으로 회전시키게 된다.
 	//Every 0.5 Seconds Object will be Rotation
 	D3DXMatrixRotationY(&matWorld, GetTickCount()/500.0f);
-	//D3DXMatrixTranslation(&matWorld,1,1,1);
 	m_pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
 	//View Matrix
@@ -196,5 +201,5 @@ void CGraphicManager::SetupLights()
 	m_pD3DDevice->SetLight(0, &light);																//디바이스에 0번 광원 설치
 	m_pD3DDevice->LightEnable(0, TRUE);															//0번 광원을 켠다
 	m_pD3DDevice->SetRenderState(D3DRS_LIGHTING, FALSE);									//광원 설정을 켠다
-	m_pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0x00202020);			
+	m_pD3DDevice->SetRenderState(D3DRS_AMBIENT, 0x00202020);
 }

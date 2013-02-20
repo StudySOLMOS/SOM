@@ -6,7 +6,7 @@ CSystem::CSystem(void)
 
 CSystem::~CSystem(void)
 {
-}
+} 
 
 LRESULT CALLBACK MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -22,8 +22,11 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
 bool CSystem::Initialize()
 {
+	//Class Initialize
 	m_bIsActive = true;
 	m_pGraphicManager = new CGraphicManager;
+
+	//Window Class
 	wc.cbSize = sizeof(WNDCLASSEX);
 	wc.style = CS_CLASSDC;
 	wc.lpfnWndProc = (WNDPROC)MsgProc;
@@ -34,20 +37,23 @@ bool CSystem::Initialize()
 	wc.hCursor = NULL;
 	wc.hbrBackground = NULL;
 	wc.lpszMenuName = NULL;
-	wc.lpszClassName ="D3D Tutorial";
+	wc.lpszClassName ="Study";
 	wc.hIconSm = NULL;
 
 	RegisterClassEx( &wc );
 
-	/// 윈도우 클래스 등록
 	/// 윈도우 크기
-	m_iScreenWidth = 1024;
-	m_iScreenHeigth = 768;
+	m_iScreenWidth = 500;
+	m_iScreenHeigth = 460;
 
 	/// 윈도우 생성
-	m_hWnd = CreateWindow( "D3D Tutorial", "D3D Tutorial : Direct3D Class",
-		WS_OVERLAPPEDWINDOW, 0, 0, m_iScreenWidth, m_iScreenHeigth,
-		GetDesktopWindow(), NULL, wc.hInstance, NULL );
+	m_hWnd = CreateWindow( wc.lpszClassName, "SOM : First Study",	WS_OVERLAPPEDWINDOW, 0, 0, m_iScreenWidth, m_iScreenHeigth, GetDesktopWindow(), NULL, wc.hInstance, NULL );
+
+	if(!m_hWnd)
+	{
+		MessageBox(NULL, "Could not find hWnd", "Study.exe", MB_OK);
+		return false;
+	}
 
 	if(NULL==(m_pD3D = Direct3DCreate9(D3D_SDK_VERSION)))
 	{
@@ -75,7 +81,7 @@ bool CSystem::Initialize()
 	d3dpp.BackBufferCount = 1;
 	d3dpp.BackBufferWidth = d3dDisplayMode.Width;
 	d3dpp.BackBufferHeight = d3dDisplayMode.Height;
-	d3dpp.BackBufferFormat = d3dDisplayMode.Format;
+	d3dpp.BackBufferFormat = d3dDisplayMode.Format;//D3DFMT_D16;
 	d3dpp.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL;
 
 
@@ -85,7 +91,10 @@ bool CSystem::Initialize()
 		return false;
 	}
 
-	m_pD3D->Release();
+	if(m_pD3D!=NULL)
+	{
+		m_pD3D->Release();
+	}
 
 	return true;
 }
@@ -95,57 +104,40 @@ void CSystem::Pulse()
 	/// Direct3D 초기화
 	if( SUCCEEDED( m_pGraphicManager->Initialize() ))
 	{
-		/// 정점버퍼 초기화
-		if( SUCCEEDED( m_pGraphicManager->InitializeVertexBuffer()  ))
+		/// 윈도우 출력
+		ShowWindow( m_hWnd, SW_SHOWDEFAULT );
+		UpdateWindow( m_hWnd );
+
+		/// 메시지 루프
+		MSG msg;
+		ZeroMemory( &msg, sizeof(msg) );
+		while( msg.message!=WM_QUIT )
 		{
-			/// 인덱스버퍼 초기화
-			if( SUCCEEDED( m_pGraphicManager->InitializeIndexBuffer() ) )
+			/// 메시지큐에 메시지가 있으면 메시지 처리
+			if( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
 			{
-				/// 윈도우 출력
-				ShowWindow( m_hWnd, SW_SHOWDEFAULT );
-				UpdateWindow( m_hWnd );
+				TranslateMessage( &msg );
+				DispatchMessage( &msg );
+			}
 
-				/// 메시지 루프
-				MSG msg;
-				ZeroMemory( &msg, sizeof(msg) );
-				while( msg.message!=WM_QUIT )
-				{
-					/// 메시지큐에 메시지가 있으면 메시지 처리
-					if( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
-					{
-						TranslateMessage( &msg );
-						DispatchMessage( &msg );
-					}
+			else if(m_bIsActive)
+			{
+				/// 처리할 메시지가 없으면 Render()함수 호출
+				Render();
+			}
 
-					else if(m_bIsActive)
-					{
-						/// 처리할 메시지가 없으면 Render()함수 호출
-						UpdateFrame();
-					}
-
-					else
-					{
-						WaitMessage();
-					}
-				}
+			else
+			{
+				WaitMessage();
 			}
 		}
 	}
 
 	/// 등록된 클래스 소거
-	UnregisterClass( "D3D Tutorial", wc.hInstance );
+	UnregisterClass( "Study", wc.hInstance );
 }
 
 void CSystem::Render()
-{
-}
-
-void CSystem::Release()
-{
-	delete m_pGraphicManager;
-}
-
-void CSystem::UpdateFrame()
 {
 	m_pGraphicManager->PreRender();
 
@@ -155,4 +147,14 @@ void CSystem::UpdateFrame()
 	}
 
 	m_pGraphicManager->PostRender();
+}
+
+void CSystem::Release()
+{
+	m_pGraphicManager->Release();
+	delete m_pGraphicManager;
+}
+
+void CSystem::UpdateFrame()
+{
 }
