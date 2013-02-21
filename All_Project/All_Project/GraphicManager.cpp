@@ -19,8 +19,8 @@ bool CGraphicManager::Initialize()
 		}
 	}
 
-	m_pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	m_pD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	//m_pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	//m_pD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
 
 	if(FAILED(m_pD3DDevice->CreateVertexBuffer(8*sizeof(CUSTOMVERTEX), 0, D3DFVF_CUSTOMVERTEX, D3DPOOL_DEFAULT, &m_pVertexBuffer, NULL)))
 	{
@@ -29,15 +29,15 @@ bool CGraphicManager::Initialize()
 
 	CUSTOMVERTEX Vertices[] = 
 	{
-		{ -1,  1,  1 , 0xffff0000 },		/// v0
-		{  1,  1,  1 , 0xff00ff00 },		/// v1
-		{  1,  1, -1 , 0xff0000ff },		/// v2
-		{ -1,  1, -1 , 0xffffff00 },			/// v3
+		{ -1, -1,  1 , 0xff00ffff , 0, 0 },		/// v0
+		{  1, -1,  1 , 0xffff00ff , 0, 1 },		/// v1
+		{ -1,  1,  1 , 0xffff0000, 1, 0 },		/// v2
+		{  1,  1,  1 , 0xff00ff00 , 1, 1},		/// v3
 
-		{ -1, -1,  1 , 0xff00ffff },			/// v4
-		{  1, -1,  1 , 0xffff00ff },			/// v5
-		{  1, -1, -1 , 0xff000000 },		/// v6
-		{ -1, -1, -1 , 0xffffffff },			/// v7
+		{ -1, -1, -1 , 0xffffffff , 0, 0 },		/// v4
+		{  1, -1, -1 , 0xff000000 , 0, 1 },	/// v5
+		{ -1,  1, -1 , 0xffffff00 , 1, 0 },		/// v6
+		{  1,  1, -1 , 0xff0000ff , 1, 1 }		/// v7
 	};
 
 	//Á¤Á¡¹öÆÛ¸¦ °ªÀ¸·Î Ã¤¿î´Ù
@@ -64,12 +64,23 @@ bool CGraphicManager::Initialize()
 
 	CUSTOMINDEX	Index[] =
 	{
-		{ 0, 1, 2 }, { 0, 2, 3 },	/// À­¸é
-		{ 4, 6, 5 }, { 4, 7, 6 },	/// ¾Æ·§¸é
-		{ 0, 3, 7 }, { 0, 7, 4 },	/// ¿ÞÂÊ¸é
-		{ 1, 5, 6 }, { 1, 6, 2 },	/// ¿À¸¥¸é
-		{ 3, 2, 6 }, { 3, 6, 7 },	/// ¾Õ¸é
-		{ 0, 4, 5 }, { 0, 5, 1 }		/// µÞ¸é
+		{ 0, 1, 2 },
+		{ 1, 2, 3 },	/// À­¸é
+
+		{ 0, 6, 2 },
+		{ 0, 4, 6 },	/// ¾Æ·§¸é
+
+		{ 0, 4, 5 },
+		{ 0, 1, 5 },	/// ¿ÞÂÊ¸é
+
+		{ 1, 3, 5 },
+		{ 3, 7, 5 },	/// ¿À¸¥¸é
+
+		{ 2, 3, 7 },
+		{ 2, 6, 7 },	/// ¾Õ¸é
+
+		{ 4, 5, 7 },
+		{ 4, 6, 7 }	/// µÞ¸é
 	};
 
 
