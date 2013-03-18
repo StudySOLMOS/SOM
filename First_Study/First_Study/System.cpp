@@ -124,7 +124,7 @@ void CSystem::Pulse()
 			else if(m_bIsActive)
 			{
 				/// 처리할 메시지가 없으면 Render()함수 호출
-				Render();
+				UpdateFrame();
 			}
 
 			else
@@ -158,4 +158,6 @@ void CSystem::Release()
 
 void CSystem::UpdateFrame()
 {
+	m_pGraphicManager->Pulse();
+	Render();
 }

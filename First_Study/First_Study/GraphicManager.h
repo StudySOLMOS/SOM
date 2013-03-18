@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Cube.h"
 
 class CGraphicManager
 {
@@ -9,11 +10,12 @@ public:
 
 public:
 	LPDIRECT3DDEVICE9 m_pD3DDevice;
-	LPDIRECT3DVERTEXBUFFER9 m_pVertexBuffer;
-	LPDIRECT3DINDEXBUFFER9 m_pIndexBuffer;
-	LPDIRECT3DTEXTURE9 m_pTexture;
+	//LPDIRECT3DVERTEXBUFFER9 m_pVertexBuffer;
+	//LPDIRECT3DINDEXBUFFER9 m_pIndexBuffer;
+	//LPDIRECT3DTEXTURE9 m_pTexture;
 
-	D3DXMATRIX m_matLocal;
+public:
+	CCube* m_Cube;
 
 public:
 	bool Initialize();
@@ -24,7 +26,7 @@ public:
 	void Release();
 
 public:
-	void SetupLights();
+	void GlobalLights();
 	void SetupMatrix();
 	void InitializeGeoMetry();
 };
